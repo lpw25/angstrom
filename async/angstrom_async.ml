@@ -49,9 +49,9 @@ let rec finalize state result =
   match state, result with
   | Partial p, `Eof_with_unconsumed_data s ->
     let bigstring = Bigstring.of_string s in
-    finalize (p.continue bigstring ~off:0 ~len:(String.length s) Complete) `Eof
+    finalize (continue bigstring ~off:0 ~len:(String.length s) Complete p.continue) `Eof
   | Partial p, `Eof                        ->
-    finalize (p.continue empty_bigstring ~off:0 ~len:0 Complete) `Eof
+    finalize (continue empty_bigstring ~off:0 ~len:0 Complete p.continue) `Eof
   | Partial _, `Stopped () -> assert false
   | state    , _           -> state_to_result state
 
@@ -67,7 +67,7 @@ let parse ?(pushback=default_pushback) p reader =
   let handle_chunk buf ~pos ~len =
     begin match !state with
     | Partial p ->
-      state := p.continue buf ~off:pos ~len Incomplete;
+      state := continue buf ~off:pos ~len Incomplete p.continue;
     | _         -> ()
     end;
     pushback () >>| fun () -> response !state

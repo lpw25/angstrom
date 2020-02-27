@@ -44,7 +44,7 @@
     reusable parsers suitable for high-performance applications. *)
 
 
-type +'a t
+type 'a t
 (** A parser for values of type ['a]. *)
 
 
@@ -576,6 +576,7 @@ module Unbuffered : sig
   type more =
     | Complete
     | Incomplete
+  type 'a continue
 
   type 'a state =
     | Partial of 'a partial (** The parser requires more input. *)
@@ -586,7 +587,7 @@ module Unbuffered : sig
       (** The number of bytes committed during the last input feeding.
           Callers must drop this number of bytes from the beginning of the
           input on subsequent calls. See {!commit} for additional details. *)
-    ; continue : bigstring -> off:int -> len:int -> more -> 'a state
+    ; continue : 'a continue
       (** A continuation of a parse that requires additional input. The input
           should include all uncommitted input (as reported by previous partial
           states) in addition to any new input that has become available, as
@@ -595,6 +596,8 @@ module Unbuffered : sig
 
   val parse : 'a t -> 'a state
   (** [parse t] runs [t] and await input if needed. *)
+
+  val continue : bigstring -> off:int -> len:int -> more -> 'a continue -> 'a state
 
   val state_to_option : 'a state -> 'a option
 

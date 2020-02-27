@@ -374,10 +374,10 @@ let input =
   let test p input ~off ~len expect =
     match Angstrom.Unbuffered.parse p with
     | Done _ | Fail _ -> assert false
-    | Partial { continue; committed } ->
+    | Partial { continue = k; committed } ->
       Alcotest.(check int) "committed is zero" 0 committed;
       let bs = Bigstringaf.of_string input ~off:0 ~len:(String.length input) in
-      let state = continue bs ~off ~len Complete in
+      let state = Angstrom.Unbuffered.continue bs ~off ~len Complete k in
       Alcotest.(check (result string string))
         "offset and length respected"
         (Ok expect)
